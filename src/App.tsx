@@ -21,6 +21,7 @@ import { DeviceNode } from './components/NodeShell'
 import { SchematicEdge } from './components/SchematicEdge'
 import { NodePicker } from './components/NodePicker'
 import { Inspector } from './components/Inspector'
+import { ContextMenu, type ContextMenuTarget, type MenuAction } from './components/ContextMenu'
 import { TopBar } from './components/TopBar'
 import { applyTheme, getTheme, type Theme } from './design/theme'
 import type { MoveUpdate } from './graph/store'
@@ -45,6 +46,7 @@ function Shell({ theme, setThemeState }: { theme: Theme; setThemeState: (t: Them
   const redo = useStore(graphStore, (s) => s.redo)
   const { screenToFlowPosition } = useReactFlow()
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [ctxMenu, setCtxMenu] = useState<ContextMenuTarget | null>(null)
 
   const flowNodes = useMemo<Node[]>(
     () =>
@@ -127,11 +129,65 @@ function Shell({ theme, setThemeState }: { theme: Theme; setThemeState: (t: Them
     [moveNodes, setSelection],
   )
 
+  const onMenuAction = useCallback(
+    (action: MenuAction) => {
+      const menu = ctxMenu
+      setCtxMenu(null)
+      if (!menu) return
+      const s = graphStore.getState()
+      if (menu.kind === 'edge') {
+        for (const id of menu.ids) s.disconnect(id)
+        return
+      }
+      if (action === 'delete') {
+        s.removeNodes(menu.ids)
+        return
+      }
+      if (action === 'duplicate') {
+        s.duplicateNodes(menu.ids)
+        return
+      }
+      if (action === 'disconnect') {
+        const ids = new Set(menu.ids)
+        for (const e of s.edges) {
+          if (ids.has(e.source) || ids.has(e.target)) s.disconnect(e.id)
+        }
+      }
+    },
+    [ctxMenu],
+  )
+
+  const onNodeContextMenu = useCallback(
+    (e: React.MouseEvent, node: { id: string }) => {
+      e.preventDefault()
+      e.stopPropagation()
+      const s = graphStore.getState()
+      const sel = s.selection
+      const ids = sel.includes(node.id) ? sel : [node.id]
+      const idSet = new Set(ids)
+      const hasEdges = s.edges.some((edge) => idSet.has(edge.source) || idSet.has(edge.target))
+      setSelection(ids)
+      setCtxMenu({ kind: 'node', ids, hasEdges, x: e.clientX, y: e.clientY })
+    },
+    [setSelection],
+  )
+
+  const onEdgeContextMenu = useCallback((e: React.MouseEvent, edge: { id: string }) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setCtxMenu({ kind: 'edge', ids: [edge.id], hasEdges: true, x: e.clientX, y: e.clientY })
+  }, [])
+
+  const onPaneContextMenu = useCallback((e: React.MouseEvent | MouseEvent) => {
+    e.preventDefault()
+    setCtxMenu(null)
+  }, [])
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement | null)?.tagName ?? ''
       const typing = tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement | null)?.isContentEditable
-      if (e.key === 'Tab' && !typing) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k' && !typing) {
         e.preventDefault()
         setPickerOpen(true)
         return
@@ -146,6 +202,12 @@ function Shell({ theme, setThemeState }: { theme: Theme; setThemeState: (t: Them
         e.preventDefault()
         if (e.shiftKey) redo()
         else undo()
+        return
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'y') {
+        if (typing) return
+        e.preventDefault()
+        redo()
         return
       }
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'd' && !typing) {
@@ -190,8 +252,15 @@ function Shell({ theme, setThemeState }: { theme: Theme; setThemeState: (t: Them
             onNodesChange={onNodesChange}
             onConnect={onConnect}
             onNodeDragStart={() => beginMove()}
+            onNodeContextMenu={onNodeContextMenu}
+            onEdgeContextMenu={onEdgeContextMenu}
+            onPaneContextMenu={onPaneContextMenu}
+            onPaneClick={() => setCtxMenu(null)}
             isValidConnection={isValidConnection}
             deleteKeyCode={null}
+            proOptions={{ hideAttribution: true }}
+            panOnScroll
+            zoomOnScroll={false}
             multiSelectionKeyCode="Control"
             panActivationKeyCode="Space"
             selectionKeyCode="Shift"
@@ -211,6 +280,9 @@ function Shell({ theme, setThemeState }: { theme: Theme; setThemeState: (t: Them
         <Inspector />
       </div>
       <NodePicker open={pickerOpen} onClose={() => setPickerOpen(false)} onPick={addAtCenter} />
+      {ctxMenu ? (
+        <ContextMenu target={ctxMenu} onAction={onMenuAction} onClose={() => setCtxMenu(null)} />
+      ) : null}
     </div>
   )
 }

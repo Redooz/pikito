@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { graphStore } from '../graph/store'
 import { getNodeDef } from '../graph/registry'
+import { Timeline } from './Timeline'
 
 function ParamRow(props: { nodeId: string; paramId: string }) {
   const { t } = useTranslation()
@@ -77,7 +78,7 @@ export function Inspector() {
             <ParamRow key={p.id} nodeId={node.id} paramId={p.id} />
           ))}
         </div>
-      ) : (
+        ) : (
         <div className="empty">
           <p className="type-faceplate" style={{ marginBottom: 8 }}>
             {t('ui.inspector.noSelection')}
@@ -85,6 +86,7 @@ export function Inspector() {
           <p style={{ fontSize: 11, lineHeight: 1.5 }}>{t('ui.inspector.noSelectionHint')}</p>
         </div>
       )}
+      <Timeline />
     </aside>
   )
 }

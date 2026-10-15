@@ -3,7 +3,7 @@
     "app": {
       "title": "Yukon",
       "loading": "CHARGEMENT",
-      "emptyCanvas": "TAB pour ajouter un module",
+      "emptyCanvas": "CTRL+K pour ajouter un module",
       "patchName": "PIECE-001"
     },
     "topbar": {
@@ -25,7 +25,9 @@
     "picker": {
       "title": "AJOUTER UN MODULE",
       "search": "Rechercher un module…",
-      "empty": "Aucun résultat"
+      "empty": "Aucun résultat",
+      "pick": "AJOUTER LE NŒUD CHOISI",
+      "closeEsc": "FERMER AVEC ÉCHAP"
     },
     "help": {
       "what": "CE QUE ÇA FAIT",
@@ -70,19 +72,54 @@
     },
     "params": {
       "const": {
-        "value": { "label": "VALEUR", "help": "La valeur fixe qui sort du module, de 0 à 1." }
+        "value": {
+          "label": "VALEUR",
+          "help": "La valeur fixe qui sort du module, de 0 à 1."
+        }
       },
       "viz": {
-        "gain": { "label": "ÉCHELLE", "help": "À quel point le dessin est agrandi dans la vignette." }
+        "gain": {
+          "label": "ÉCHELLE",
+          "help": "À quel point le dessin est agrandi dans la vignette."
+        }
       },
       "master": {
-        "volume": { "label": "VOLUME", "help": "Niveau de sortie vers les haut-parleurs." }
+        "volume": {
+          "label": "VOLUME",
+          "help": "Niveau de sortie vers les haut-parleurs."
+        }
       }
     },
     "ports": {
-      "viz": { "in": "ENTRÉE" },
-      "master": { "in": "AUDIO" },
-      "const": { "out": "SIGNAL" }
+      "viz": {
+        "in": "ENTRÉE"
+      },
+      "master": {
+        "in": "AUDIO"
+      },
+      "const": {
+        "out": "SIGNAL"
+      }
+    },
+    "menu": {
+      "node": "NŒUD",
+      "edge": "CÂBLE",
+      "delete": "SUPPRIMER",
+      "duplicate": "DUPLIQUER",
+      "disconnect": "DÉCONNECTER"
+    },
+    "timeline": {
+      "title": "CHRONOLOGIE",
+      "toggle": "AFFICHER OU MASQUER LA CHRONOLOGIE",
+      "empty": "AUCUN CHANGEMENT POUR L'INSTANT",
+      "now": "MAINTENANT",
+      "addNode": "AJOUTER UN NŒUD",
+      "removeNodes": "SUPPRIMER UN NŒUD",
+      "duplicate": "DUPLIQUER",
+      "connect": "CONNECTER",
+      "disconnect": "DÉCONNECTER",
+      "move": "DÉPLACER",
+      "params": "PARAMÈTRE"
     }
   }
 }

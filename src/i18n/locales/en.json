@@ -3,7 +3,7 @@
     "app": {
       "title": "Yukon",
       "loading": "LOADING",
-      "emptyCanvas": "TAB to add a node",
+      "emptyCanvas": "CTRL+K to add a node",
       "patchName": "PATCH-001"
     },
     "topbar": {
@@ -25,7 +25,9 @@
     "picker": {
       "title": "ADD NODE",
       "search": "Search node…",
-      "empty": "No results"
+      "empty": "No results",
+      "pick": "ADD THE CHOSEN NODE",
+      "closeEsc": "CLOSE WITH ESC"
     },
     "help": {
       "what": "WHAT THIS DOES",
@@ -70,19 +72,54 @@
     },
     "params": {
       "const": {
-        "value": { "label": "VALUE", "help": "The fixed value leaving the node, 0 to 1." }
+        "value": {
+          "label": "VALUE",
+          "help": "The fixed value leaving the node, 0 to 1."
+        }
       },
       "viz": {
-        "gain": { "label": "SCALE", "help": "How much the drawing is enlarged in the thumbnail." }
+        "gain": {
+          "label": "SCALE",
+          "help": "How much the drawing is enlarged in the thumbnail."
+        }
       },
       "master": {
-        "volume": { "label": "VOLUME", "help": "Output level towards the speakers." }
+        "volume": {
+          "label": "VOLUME",
+          "help": "Output level towards the speakers."
+        }
       }
     },
     "ports": {
-      "viz": { "in": "INPUT" },
-      "master": { "in": "AUDIO" },
-      "const": { "out": "SIGNAL" }
+      "viz": {
+        "in": "INPUT"
+      },
+      "master": {
+        "in": "AUDIO"
+      },
+      "const": {
+        "out": "SIGNAL"
+      }
+    },
+    "menu": {
+      "node": "NODE",
+      "edge": "CONNECTOR",
+      "delete": "DELETE",
+      "duplicate": "DUPLICATE",
+      "disconnect": "DISCONNECT"
+    },
+    "timeline": {
+      "title": "TIMELINE",
+      "toggle": "SHOW OR HIDE THE TIMELINE",
+      "empty": "NO CHANGES YET",
+      "now": "NOW",
+      "addNode": "ADD NODE",
+      "removeNodes": "DELETE NODE",
+      "duplicate": "DUPLICATE",
+      "connect": "CONNECT",
+      "disconnect": "DISCONNECT",
+      "move": "MOVE",
+      "params": "PARAMETER"
     }
   }
 }

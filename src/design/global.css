@@ -733,3 +733,167 @@ select {
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
+
+.picker .kbd-row .kbd-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.picker .item.hl {
+  border-color: var(--y-ink);
+  background: var(--y-hover);
+  outline: none;
+}
+
+/* Right-click context menu */
+
+.ctx-menu {
+  position: fixed;
+  min-width: 132px;
+  background: var(--y-bg);
+  border: 1px solid var(--y-ink);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.16);
+  border-radius: var(--y-r2);
+  z-index: 35;
+  display: flex;
+  flex-direction: column;
+}
+
+.ctx-menu > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 6px var(--y-s2);
+  border-bottom: 1px solid var(--y-line);
+  color: var(--y-ink-soft);
+}
+
+.ctx-menu .ctx-item {
+  display: flex;
+  align-items: center;
+  gap: var(--y-s2);
+  padding: 7px var(--y-s2);
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--y-ink);
+  border-bottom: 1px dashed var(--y-line);
+}
+
+.ctx-menu .ctx-item:last-child {
+  border-bottom: none;
+}
+
+.ctx-menu .ctx-item:hover,
+.ctx-menu .ctx-item:focus-visible {
+  background: var(--y-hover);
+  outline: none;
+}
+
+.ctx-menu .ctx-item .code {
+  font-family: var(--y-font-display);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.ctx-menu .ctx-item[data-action='delete'] .code,
+.ctx-menu .ctx-item[data-action='disconnect'] .code {
+  color: var(--y-accent);
+}
+
+/* Inspector timeline */
+
+.timeline {
+  flex: none;
+  border-top: 1px dashed var(--y-line);
+  padding: var(--y-s2) var(--y-s3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--y-s2);
+}
+
+.timeline-head {
+  display: flex;
+  align-items: center;
+  gap: var(--y-s2);
+}
+
+.timeline .btn-i {
+  font-family: var(--y-font-display);
+}
+
+.timeline-rows {
+  max-height: 184px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.timeline-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--y-s2);
+  padding: 3px var(--y-s1);
+  background: none;
+  border: 1px solid transparent;
+  text-align: left;
+  cursor: pointer;
+  color: var(--y-ink);
+  border-radius: var(--y-r0);
+}
+
+.timeline-row:hover,
+.timeline-row:focus-visible {
+  border-color: var(--y-ink);
+  background: var(--y-hover);
+  outline: none;
+}
+
+.timeline-row.future {
+  color: var(--y-ink-soft);
+}
+
+.timeline-row.future:hover {
+  color: var(--y-ink);
+}
+
+.timeline-row .stamp,
+.timeline-now .stamp {
+  font-family: var(--y-font-lcd);
+  font-size: 9px;
+  color: var(--y-ink-soft);
+  flex: none;
+}
+
+.timeline-row .label {
+  font-family: var(--y-font-display);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.timeline-now {
+  display: flex;
+  align-items: baseline;
+  gap: var(--y-s2);
+  padding: 3px var(--y-s1);
+  border: 1px solid var(--y-ink);
+  background: var(--y-hover);
+  border-radius: var(--y-r0);
+}
+
+.timeline-now .label {
+  font-family: var(--y-font-display);
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+}

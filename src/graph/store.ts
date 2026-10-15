@@ -8,7 +8,23 @@ interface Snapshot {
   edges: GraphEdge[]
 }
 
+export type HistoryKind =
+  | 'addNode'
+  | 'removeNodes'
+  | 'duplicate'
+  | 'connect'
+  | 'disconnect'
+  | 'move'
+  | 'params'
+
 export type MoveUpdate = { id: string; position: { x: number; y: number } }
+
+export interface HistoryEvent {
+  kind: HistoryKind
+  ts: number
+}
+
+const PARAM_COALESCE_MS = 700
 
 export interface GraphState {
   nodes: GraphNode[]
@@ -16,6 +32,7 @@ export interface GraphState {
   selection: string[]
   past: Snapshot[]
   future: Snapshot[]
+  events: { past: HistoryEvent[]; future: HistoryEvent[] }
   addNode: (type: string, position?: { x: number; y: number }) => string
   removeNodes: (ids: string[]) => void
   duplicateNodes: (ids: string[]) => string[]
@@ -30,6 +47,8 @@ export interface GraphState {
   clearSelection: () => void
   undo: () => void
   redo: () => void
+  jumpToPast: (steps: number) => void
+  jumpToFuture: (steps: number) => void
   canUndo: () => boolean
   canRedo: () => boolean
   resetHistory: () => void
@@ -46,13 +65,38 @@ function clone(s: Snapshot): Snapshot {
   }
 }
 
-export function createGraphStore(): GraphStore {
+export interface GraphStoreOptions {
+  now?: () => number
+}
+
+export function createGraphStore(options: GraphStoreOptions = {}): GraphStore {
   return createStore<GraphState>((set, get) => {
-    const pushHistory = () => {
+    const now = options.now ?? Date.now
+    let pendingParamKey: string | null = null
+    let pendingParamTs = 0
+
+    const pushHistory = (kind: HistoryKind) => {
       const s = get()
       const past = s.past.concat(clone({ nodes: s.nodes, edges: s.edges }))
       while (past.length > HISTORY_LIMIT) past.shift()
-      set({ past, future: [] })
+      const pastEvents = s.events.past.concat({ kind, ts: now() })
+      while (pastEvents.length > HISTORY_LIMIT) pastEvents.shift()
+      set({
+        past,
+        future: [],
+        events: { past: pastEvents, future: [] },
+      })
+      pendingParamKey = null
+    }
+
+    const pushCoalesced = (key: string | null, ts: number) => {
+      if (key !== null && pendingParamKey === key && ts - pendingParamTs <= PARAM_COALESCE_MS) {
+        set({ future: [] })
+        return
+      }
+      pushHistory('params')
+      pendingParamKey = key
+      pendingParamTs = ts
     }
     const newId = (prefix: string) =>
       `${prefix}_${crypto.randomUUID().slice(0, 8)}`
@@ -63,11 +107,12 @@ export function createGraphStore(): GraphStore {
       selection: [],
       past: [],
       future: [],
+      events: { past: [], future: [] },
 
       addNode: (type, position) => {
         const def = getNodeDef(type)
         if (!def) throw new Error(`unknown node type: ${type}`)
-        pushHistory()
+        pushHistory('addNode')
         const id = newId(type)
         const params: ParamValues = {}
         for (const p of def.params) params[p.id] = p.defaultValue
@@ -84,7 +129,7 @@ export function createGraphStore(): GraphStore {
 
       removeNodes: (ids) => {
         if (ids.length === 0) return
-        pushHistory()
+        pushHistory('removeNodes')
         set((s) => ({
           nodes: s.nodes.filter((n) => !ids.includes(n.id)),
           edges: s.edges.filter((e) => !ids.includes(e.source) && !ids.includes(e.target)),
@@ -97,7 +142,7 @@ export function createGraphStore(): GraphStore {
         const s = get()
         const defs = s.nodes.filter((n) => ids.includes(n.id))
         if (defs.length === 0) return []
-        pushHistory()
+        pushHistory('duplicate')
         const created = defs.map((n) => ({
           ...structuredClone(n),
           id: newId(n.type),
@@ -119,13 +164,13 @@ export function createGraphStore(): GraphStore {
         }))
       },
 
-      beginMove: () => pushHistory(),
+      beginMove: () => pushHistory('move'),
 
       connect: (attempt) => {
         const s = get()
         const verdict = s.checkConnection(attempt)
         if (!verdict.ok) return verdict
-        pushHistory()
+        pushHistory('connect')
         set((cur) => ({
           edges: cur.edges.concat({
             id: newId('e'),
@@ -156,12 +201,14 @@ export function createGraphStore(): GraphStore {
 
       disconnect: (edgeId) => {
         if (!get().edges.some((e) => e.id === edgeId)) return
-        pushHistory()
+        pushHistory('disconnect')
         set((s) => ({ edges: s.edges.filter((e) => e.id !== edgeId) }))
       },
 
       setNodeParams: (id, values) => {
-        pushHistory()
+        const ts = now()
+        const paramIds = Object.keys(values).sort().join(',')
+        pushCoalesced(`${id}:${paramIds}`, ts)
         set((s) => ({
           nodes: s.nodes.map((n) =>
             n.id === id ? { ...n, params: { ...n.params, ...values } } : n,
@@ -185,12 +232,21 @@ export function createGraphStore(): GraphStore {
 
       undo: () => {
         const s = get()
-        if (s.past.length === 0) return
+        if (s.past.length === 0 || s.events.past.length === 0) return
         const past = [...s.past]
         const snapshot = past.pop()
         if (!snapshot) return
-        const current: Snapshot = { nodes: s.nodes, edges: s.edges }
-        set({ nodes: snapshot.nodes, edges: snapshot.edges, past, future: s.future.concat([current]) })
+        const pastEvents = [...s.events.past]
+        const event = pastEvents.pop()
+        if (!event) return
+        pendingParamKey = null
+        set({
+          nodes: snapshot.nodes,
+          edges: snapshot.edges,
+          past,
+          future: s.future.concat({ nodes: structuredClone(s.nodes), edges: structuredClone(s.edges) }),
+          events: { past: pastEvents, future: s.events.future.concat([event]) },
+        })
       },
 
       redo: () => {
@@ -199,15 +255,79 @@ export function createGraphStore(): GraphStore {
         const future = [...s.future]
         const snapshot = future.pop()
         if (!snapshot) return
-        const current: Snapshot = { nodes: s.nodes, edges: s.edges }
-        set({ nodes: snapshot.nodes, edges: snapshot.edges, future, past: s.past.concat([current]) })
+        const futureEvents = [...s.events.future]
+        const event = futureEvents.pop()
+        if (!event) return
+        pendingParamKey = null
+        set({
+          nodes: snapshot.nodes,
+          edges: snapshot.edges,
+          future,
+          past: s.past.concat({ nodes: structuredClone(s.nodes), edges: structuredClone(s.edges) }),
+          events: { past: s.events.past.concat([event]), future: futureEvents },
+        })
+      },
+
+      jumpToPast: (steps) => {
+        const s = get()
+        const n = Math.min(Math.max(steps | 0, 0), s.past.length)
+        if (n === 0) return
+        pendingParamKey = null
+        const past = s.past.slice()
+        const pastEvents = s.events.past.slice()
+        const future = s.future.slice()
+        const futureEvents = s.events.future.slice()
+        let current: Snapshot = { nodes: structuredClone(s.nodes), edges: structuredClone(s.edges) }
+        for (let i = 0; i < n; i++) {
+          const snapshot = past.pop()
+          const event = pastEvents.pop()
+          if (!snapshot || !event) break
+          future.push(current)
+          current = snapshot
+          futureEvents.push(event)
+        }
+        set({
+          nodes: current.nodes,
+          edges: current.edges,
+          past,
+          future,
+          events: { past: pastEvents, future: futureEvents },
+        })
+      },
+
+      jumpToFuture: (steps) => {
+        const s = get()
+        const n = Math.min(Math.max(steps | 0, 0), s.future.length)
+        if (n === 0) return
+        pendingParamKey = null
+        const future = s.future.slice()
+        const futureEvents = s.events.future.slice()
+        const past = s.past.slice()
+        const pastEvents = s.events.past.slice()
+        let current: Snapshot = { nodes: structuredClone(s.nodes), edges: structuredClone(s.edges) }
+        for (let i = 0; i < n; i++) {
+          const snapshot = future.pop()
+          const event = futureEvents.pop()
+          if (!snapshot || !event) break
+          past.push(current)
+          current = snapshot
+          pastEvents.push(event)
+        }
+        set({
+          nodes: current.nodes,
+          edges: current.edges,
+          future,
+          past,
+          events: { past: pastEvents, future: futureEvents },
+        })
       },
 
       canUndo: () => get().past.length > 0,
       canRedo: () => get().future.length > 0,
 
       resetHistory: () => {
-        set({ past: [], future: [] })
+        pendingParamKey = null
+        set({ past: [], future: [], events: { past: [], future: [] } })
       },
     }
   })

@@ -3,7 +3,7 @@
     "app": {
       "title": "Yukon",
       "loading": "CARGANDO",
-      "emptyCanvas": "TAB para añadir un nodo",
+      "emptyCanvas": "CTRL+K para añadir un nodo",
       "patchName": "PARCH-001"
     },
     "topbar": {
@@ -25,7 +25,9 @@
     "picker": {
       "title": "AÑADIR NODO",
       "search": "Buscar nodo…",
-      "empty": "Sin resultados"
+      "empty": "Sin resultados",
+      "pick": "AÑADIR EL NODO ELEGIDO",
+      "closeEsc": "CERRAR CON ESC"
     },
     "help": {
       "what": "QUÉ HACE ESTO",
@@ -70,19 +72,54 @@
     },
     "params": {
       "const": {
-        "value": { "label": "VALOR", "help": "El valor fijo que sale del nodo, de 0 a 1." }
+        "value": {
+          "label": "VALOR",
+          "help": "El valor fijo que sale del nodo, de 0 a 1."
+        }
       },
       "viz": {
-        "gain": { "label": "ESCALA", "help": "Cuánto se agranda el dibujo en la miniatura." }
+        "gain": {
+          "label": "ESCALA",
+          "help": "Cuánto se agranda el dibujo en la miniatura."
+        }
       },
       "master": {
-        "volume": { "label": "VOLUMEN", "help": "Nivel de salida hacia los altavoces." }
+        "volume": {
+          "label": "VOLUMEN",
+          "help": "Nivel de salida hacia los altavoces."
+        }
       }
     },
     "ports": {
-      "viz": { "in": "ENTRADA" },
-      "master": { "in": "AUDIO" },
-      "const": { "out": "SEÑAL" }
+      "viz": {
+        "in": "ENTRADA"
+      },
+      "master": {
+        "in": "AUDIO"
+      },
+      "const": {
+        "out": "SEÑAL"
+      }
+    },
+    "menu": {
+      "node": "NODO",
+      "edge": "CABLE",
+      "delete": "BORRAR",
+      "duplicate": "DUPLICAR",
+      "disconnect": "DESCONECTAR"
+    },
+    "timeline": {
+      "title": "CRONOLOGÍA",
+      "toggle": "MOSTRAR U OCULTAR LA CRONOLOGÍA",
+      "empty": "TODAVÍA NO HAY CAMBIOS",
+      "now": "AHORA",
+      "addNode": "AÑADIR NODO",
+      "removeNodes": "BORRAR NODO",
+      "duplicate": "DUPLICAR",
+      "connect": "CONECTAR",
+      "disconnect": "DESCONECTAR",
+      "move": "MOVER",
+      "params": "PARÁMETRO"
     }
   }
 }

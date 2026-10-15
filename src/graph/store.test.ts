@@ -200,6 +200,130 @@ describe('undo/redo', () => {
   })
 })
 
+describe('history events and param coalescing', () => {
+  let clockNow: number
+  const clock = () => clockNow
+
+  beforeEach(() => {
+    clearRegistry()
+    registerNode(fakeDef('srcA', [{ id: 'out', kind: 'image', labelKey: 'ui.ports.out' }], []))
+    clockNow = 1_000_000
+    store = createGraphStore({ now: clock })
+  })
+
+  it('aligns events with snapshots on undo and redo', () => {
+    store.getState().addNode('srcA')
+    store.getState().addNode('srcA')
+    expect(store.getState().events.past.map((e) => e.kind)).toEqual(['addNode', 'addNode'])
+    store.getState().undo()
+    expect(store.getState().events.past.map((e) => e.kind)).toEqual(['addNode'])
+    expect(store.getState().events.future.map((e) => e.kind)).toEqual(['addNode'])
+    store.getState().redo()
+    expect(store.getState().events.past.map((e) => e.kind)).toEqual(['addNode', 'addNode'])
+    expect(store.getState().events.future).toEqual([])
+  })
+
+  it('records specific kinds for mutations', () => {
+    const a = store.getState().addNode('srcA')
+    store.getState().beginMove()
+    store.getState().moveNodes([{ id: a, position: { x: 5, y: 5 } }])
+    store.getState().setNodeParams(a, { value: 0.2 })
+    expect(store.getState().events.past.map((e) => e.kind)).toEqual([
+      'addNode',
+      'move',
+      'params',
+    ])
+    store.getState().resetHistory()
+    expect(store.getState().events.past).toEqual([])
+  })
+
+  it('coalesces rapid edits of the same param into one snapshot', () => {
+    const a = store.getState().addNode('srcA')
+    store.getState().resetHistory()
+    clockNow += 100
+    store.getState().setNodeParams(a, { value: 0.1 })
+    clockNow += 100
+    store.getState().setNodeParams(a, { value: 0.2 })
+    clockNow += 100
+    store.getState().setNodeParams(a, { value: 0.3 })
+    expect(store.getState().past).toHaveLength(1)
+    expect(store.getState().events.past).toHaveLength(1)
+    expect(store.getState().nodes[0]?.params.value).toBe(0.3)
+  })
+
+  it('does not coalesce different params or distant edits', () => {
+    const a = store.getState().addNode('srcA')
+    store.getState().resetHistory()
+    clockNow += 100
+    store.getState().setNodeParams(a, { value: 0.1 })
+    clockNow += 100
+    store.getState().setNodeParams(a, { value: 0.2 })
+    clockNow += 2000
+    store.getState().setNodeParams(a, { value: 0.3 })
+    expect(store.getState().past).toHaveLength(2)
+    clockNow += 100
+    store.getState().setNodeParams(a, { valueX: 0.4 })
+    expect(store.getState().past).toHaveLength(3)
+  })
+
+  it('jumps N steps into the past atomically', () => {
+    store.getState().addNode('srcA')
+    store.getState().addNode('srcA')
+    store.getState().addNode('srcA')
+    store.getState().jumpToPast(2)
+    expect(store.getState().nodes).toHaveLength(1)
+    expect(store.getState().past).toHaveLength(1)
+    expect(store.getState().future).toHaveLength(2)
+    expect(store.getState().events.past.map((e) => e.kind)).toEqual(['addNode'])
+    expect(store.getState().events.future.map((e) => e.kind)).toEqual(['addNode', 'addNode'])
+    store.getState().undo()
+    expect(store.getState().nodes).toHaveLength(0)
+  })
+
+  it('jumps N steps into the future atomically', () => {
+    store.getState().addNode('srcA')
+    store.getState().addNode('srcA')
+    store.getState().addNode('srcA')
+    store.getState().undo()
+    store.getState().undo()
+    store.getState().jumpToFuture(2)
+    expect(store.getState().nodes).toHaveLength(3)
+    expect(store.getState().past).toHaveLength(3)
+    expect(store.getState().future).toHaveLength(0)
+    expect(store.getState().events.past.map((e) => e.kind)).toEqual(['addNode', 'addNode', 'addNode'])
+    expect(store.getState().events.future).toEqual([])
+  })
+
+  it('jump clamps to available history', () => {
+    store.getState().addNode('srcA')
+    store.getState().jumpToPast(5)
+    expect(store.getState().nodes).toHaveLength(0)
+    expect(store.getState().canUndo()).toBe(false)
+    store.getState().undo()
+    store.getState().jumpToFuture(9)
+    expect(store.getState().canRedo()).toBe(false)
+    expect(store.getState().nodes).toHaveLength(1)
+  })
+
+  it('new mutations after undo drop future events and snapshots', () => {
+    store.getState().addNode('srcA')
+    store.getState().undo()
+    store.getState().addNode('srcA')
+    expect(store.getState().events.future).toEqual([])
+    expect(store.getState().future).toHaveLength(0)
+    expect(store.getState().events.past).toHaveLength(1)
+  })
+
+  it('events cap in lockstep with snapshots', () => {
+    for (let i = 0; i < 55; i++) {
+      clockNow += 10
+      store.getState().addNode('srcA')
+    }
+    expect(store.getState().past).toHaveLength(50)
+    expect(store.getState().events.past).toHaveLength(50)
+  })
+})
+
 describe('selection', () => {
   it('sets, adds and clears selection', () => {
     const a = add('srcA')
