@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import type { NodeDef } from '../graph/types'
+import type { NodeDef } from '../../../graph/types'
 
 interface HelpPopoverProps {
   def: NodeDef

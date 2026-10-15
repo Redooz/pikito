@@ -1,10 +1,8 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { menuFor, type MenuAction } from './contextMenuData'
 import type { ContextMenuTarget } from './ContextMenuTypes'
-
-export type { ContextMenuTarget } from './ContextMenuTypes'
-export type { MenuAction } from './contextMenuData'
+import { useContextMenuPositioning, useContextMenuDismiss } from './hook/useContextMenuBehavior'
 
 interface ContextMenuProps {
   target: ContextMenuTarget
@@ -14,31 +12,10 @@ interface ContextMenuProps {
 
 export function ContextMenu({ target, onAction, onClose }: ContextMenuProps) {
   const { t } = useTranslation()
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = useRef<HTMLDivElement | null>(null)
 
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const box = el.getBoundingClientRect()
-    el.style.left = `${Math.min(target.x, window.innerWidth - box.width - 8)}px`
-    el.style.top = `${Math.min(target.y, window.innerHeight - box.height - 8)}px`
-  }, [target.x, target.y])
-
-  useEffect(() => {
-    const closeOnClick = (e: MouseEvent) => {
-      if (ref.current?.contains(e.target as Node)) return
-      onClose()
-    }
-    const closeKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('mousedown', closeOnClick)
-    window.addEventListener('keydown', closeKey)
-    return () => {
-      window.removeEventListener('mousedown', closeOnClick)
-      window.removeEventListener('keydown', closeKey)
-    }
-  }, [onClose])
+  useContextMenuPositioning(ref, target.x, target.y)
+  useContextMenuDismiss(ref, onClose)
 
   const count = target.ids.length
   return (

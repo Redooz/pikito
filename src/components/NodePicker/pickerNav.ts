@@ -6,3 +6,11 @@ export function moveHighlight(current: number, delta: -1 | 1, count: number): nu
   if (next >= count) return 0
   return next
 }
+
+export function nextEscape(highlight: number): 'search' | 'close' {
+  return highlight >= 0 ? 'search' : 'close'
+}
+
+export function pickTarget<T>(flat: T[], highlight: number): T | undefined {
+  return flat[highlight] ?? flat[0]
+}
