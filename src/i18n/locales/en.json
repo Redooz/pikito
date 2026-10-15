@@ -1,0 +1,88 @@
+{
+  "ui": {
+    "app": {
+      "title": "Yukon",
+      "loading": "LOADING",
+      "emptyCanvas": "TAB to add a node",
+      "patchName": "PATCH-001"
+    },
+    "topbar": {
+      "play": "PLAY",
+      "stop": "STOP",
+      "addNode": "ADD NODE",
+      "language": "LANGUAGE",
+      "theme": "THEME",
+      "themeLight": "LIGHT",
+      "themeDark": "DARK"
+    },
+    "inspector": {
+      "title": "INSPECTOR",
+      "noSelection": "Nothing selected.",
+      "noSelectionHint": "Select a node in the graph to edit its parameters.",
+      "params": "PARAMETERS",
+      "info": "WHAT THIS DOES"
+    },
+    "picker": {
+      "title": "ADD NODE",
+      "search": "Search node…",
+      "empty": "No results"
+    },
+    "help": {
+      "what": "WHAT THIS DOES",
+      "example": "MUSICAL EXAMPLE"
+    },
+    "families": {
+      "source": "SOURCE",
+      "vision": "VISION",
+      "control": "CONTROL",
+      "music": "MUSIC",
+      "synth": "SYNTHESIS",
+      "fx": "FX",
+      "out": "OUTPUT"
+    },
+    "signals": {
+      "image": "IMAGE",
+      "signal": "SIGNAL",
+      "note": "NOTE",
+      "audio": "AUDIO"
+    },
+    "status": {
+      "incompatible": "TYPE NOT COMPATIBLE",
+      "temporality": "T 44.1K",
+      "fake": "NO SIGNAL"
+    },
+    "nodes": {
+      "const": {
+        "name": "CONSTANT",
+        "desc": "Emits a fixed value that other nodes read.",
+        "example": "Like turning a volume knob: it sets a constant value. E.g. 0.7 leaves another node's filter 70% open."
+      },
+      "viz": {
+        "name": "MONITOR",
+        "desc": "Shows the incoming signal in the thumbnail, untouched.",
+        "example": "Like the porthole on an amp: it doesn't change the sound, it shows what's inside."
+      },
+      "master": {
+        "name": "MASTER",
+        "desc": "Final destination for audio with a level meter.",
+        "example": "The room's loudspeaker: all audio must end up here, same as on a mixing desk."
+      }
+    },
+    "params": {
+      "const": {
+        "value": { "label": "VALUE", "help": "The fixed value leaving the node, 0 to 1." }
+      },
+      "viz": {
+        "gain": { "label": "SCALE", "help": "How much the drawing is enlarged in the thumbnail." }
+      },
+      "master": {
+        "volume": { "label": "VOLUME", "help": "Output level towards the speakers." }
+      }
+    },
+    "ports": {
+      "viz": { "in": "INPUT" },
+      "master": { "in": "AUDIO" },
+      "const": { "out": "SIGNAL" }
+    }
+  }
+}

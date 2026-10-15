@@ -1,0 +1,88 @@
+{
+  "ui": {
+    "app": {
+      "title": "Yukon",
+      "loading": "CARGANDO",
+      "emptyCanvas": "TAB para añadir un nodo",
+      "patchName": "PARCH-001"
+    },
+    "topbar": {
+      "play": "REPRODUCIR",
+      "stop": "DETENER",
+      "addNode": "AÑADIR NODO",
+      "language": "IDIOMA",
+      "theme": "TEMA",
+      "themeLight": "CLARO",
+      "themeDark": "OSCURO"
+    },
+    "inspector": {
+      "title": "INSPECTOR",
+      "noSelection": "Nada seleccionado.",
+      "noSelectionHint": "Selecciona un nodo en el grafo para editar sus parámetros.",
+      "params": "PARÁMETROS",
+      "info": "QUÉ HACE ESTO"
+    },
+    "picker": {
+      "title": "AÑADIR NODO",
+      "search": "Buscar nodo…",
+      "empty": "Sin resultados"
+    },
+    "help": {
+      "what": "QUÉ HACE ESTO",
+      "example": "EJEMPLO MUSICAL"
+    },
+    "families": {
+      "source": "FUENTE",
+      "vision": "VISIÓN",
+      "control": "CONTROL",
+      "music": "MÚSICA",
+      "synth": "SÍNTESIS",
+      "fx": "FX",
+      "out": "SALIDA"
+    },
+    "signals": {
+      "image": "IMAGEN",
+      "signal": "SEÑAL",
+      "note": "NOTA",
+      "audio": "AUDIO"
+    },
+    "status": {
+      "incompatible": "TIPO NO COMPATIBLE",
+      "temporality": "T 44.1K",
+      "fake": "SIN SEÑAL"
+    },
+    "nodes": {
+      "const": {
+        "name": "CONSTANTE",
+        "desc": "Emite un valor fijo que otros nodos leen.",
+        "example": "Como girar el pomo de volumen: fija un valor constante. Ej: 0.7 deja el filtro de otro nodo abierto al 70 %."
+      },
+      "viz": {
+        "name": "VISOR",
+        "desc": "Muestra la señal entrante en la miniatura, sin alterarla.",
+        "example": "Como la mirilla de un amplificador: no cambia el sonido, te enseña lo que hay dentro."
+      },
+      "master": {
+        "name": "MASTER",
+        "desc": "Destino final del audio con medidor de nivel.",
+        "example": "El altavoz de la sala: todo el audio debe terminar aquí, igual que en un mezclador."
+      }
+    },
+    "params": {
+      "const": {
+        "value": { "label": "VALOR", "help": "El valor fijo que sale del nodo, de 0 a 1." }
+      },
+      "viz": {
+        "gain": { "label": "ESCALA", "help": "Cuánto se agranda el dibujo en la miniatura." }
+      },
+      "master": {
+        "volume": { "label": "VOLUMEN", "help": "Nivel de salida hacia los altavoces." }
+      }
+    },
+    "ports": {
+      "viz": { "in": "ENTRADA" },
+      "master": { "in": "AUDIO" },
+      "const": { "out": "SEÑAL" }
+    }
+  }
+}

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Yukon — ASCII Glyph Boil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Silkscreen&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --surface: #E6E1D3;
+    --surface-2: #F2EEE4;
+    --surface-3: #D8D2C2;
+    --surface-brown: #3A2422;
+    --surface-dark: #161412;
+    --primary: #1A1814;
+    --on-surface: #1A1814;
+    --on-surface-dark: #E8E2D4;
+    --secondary: #5C574C;
+    --coral: #E85B47;
+    --yellow: #E8C547;
+    --mint: #2FC4B2;
+    --olive: #8A9A4B;
+    --phosphor: #3FA66A;
+    --bg: var(--surface);
+    --fg: var(--on-surface);
+    --mut: var(--secondary);
+    --screen-bg: var(--surface-2);
+    --screen-fg: var(--primary);
+  }
+  html[data-theme="dark"] {
+    --bg: var(--surface-dark);
+    --fg: var(--on-surface-dark);
+    --mut: #8A8272;
+    --screen-bg: var(--surface-brown);
+    --screen-fg: var(--phosphor);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "IBM Plex Mono", monospace;
+    overflow: hidden;
+  }
+
+  .hud {
+    position: fixed; inset: 0 0 auto 0;
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 16px;
+    border-bottom: 1px solid color-mix(in srgb, var(--fg) 25%, transparent);
+    font-family: "Martian Mono", monospace;
+    font-size: 8px; font-weight: 500; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--mut);
+    z-index: 20; user-select: none;
+  }
+  .hud .brand { color: var(--fg); }
+  .hud .spacer { flex: 1; }
+  .hud button {
+    font: inherit; letter-spacing: inherit; text-transform: inherit;
+    color: var(--fg); background: transparent;
+    border: 1px solid color-mix(in srgb, var(--fg) 35%, transparent);
+    border-radius: 9999px; padding: 6px 14px; cursor: pointer;
+    transition: background 120ms linear;
+  }
+  .hud button:hover { background: color-mix(in srgb, var(--fg) 10%, transparent); }
+  .hud button:active { transform: translateY(1px); }
+  .hud label {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--mut);
+  }
+  .hud input[type="range"] { width: 80px; accent-color: var(--coral); }
+  .phase {
+    font-family: "Silkscreen", monospace;
+    font-size: 10px; color: var(--phosphor); min-width: 64px;
+  }
+
+  .crop { position: fixed; width: 8px; height: 8px; z-index: 15; pointer-events: none; }
+  .crop::before, .crop::after { content: ""; position: absolute; background: var(--mut); }
+  .crop::before { width: 8px; height: 1px; top: 0; left: 0; }
+  .crop::after  { width: 1px; height: 8px; top: 0; left: 0; }
+  .crop.tl { top: 52px; left: 12px; }
+  .crop.tr { top: 52px; right: 12px; transform: scaleX(-1); }
+  .crop.bl { bottom: 12px; left: 12px; transform: scaleY(-1); }
+  .crop.br { bottom: 12px; right: 12px; transform: scale(-1); }
+
+  #deck {
+    position: absolute; inset: 44px 0 0 0;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 12px; padding: 16px;
+  }
+  .module {
+    display: flex; flex-direction: column;
+    border: 1px solid color-mix(in srgb, var(--fg) 25%, transparent);
+    background: color-mix(in srgb, var(--fg) 4%, transparent);
+    min-height: 0;
+  }
+  .module .head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px;
+    background: var(--primary);
+    color: var(--surface-2);
+    font-family: "Martian Mono", monospace;
+    font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase;
+  }
+  html[data-theme="dark"] .module .head { background: var(--surface-brown); color: var(--phosphor); }
+  .module .head .tab { width: 4px; align-self: stretch; background: var(--coral); margin: -6px 4px -6px -10px; }
+  .module .head .code { color: color-mix(in srgb, currentColor 60%, transparent); }
+  .screen {
+    flex: 1; min-height: 0;
+    background: var(--screen-bg);
+    color: var(--screen-fg);
+    margin: 8px;
+    border: 1px solid color-mix(in srgb, var(--screen-fg) 30%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--screen-fg) 12%, transparent);
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  pre.ascii {
+    font-family: "Silkscreen", monospace;
+    font-size: 9px;
+    line-height: 9px;
+    letter-spacing: 0;
+    white-space: pre;
+    user-select: none;
+    margin: 0;
+    transform: scaleY(1.28); /* bitmap cell proportion */
+    transform-origin: center;
+  }
+  .foot-strip {
+    padding: 4px 10px 8px;
+    display: flex; justify-content: space-between;
+    font-family: "Martian Mono", monospace;
+    font-size: 8px; letter-spacing: 0.12em;
+    color: var(--mut); text-transform: uppercase;
+  }
+  .decode {
+    font-family: "Silkscreen", monospace;
+    font-size: 12px; line-height: 1.6;
+    color: var(--screen-fg);
+    white-space: pre-wrap;
+    padding: 12px;
+  }
+  .decode .pin { background: var(--coral); color: var(--primary); }
+
+  .foot {
+    position: fixed; left: 16px; right: 16px; bottom: 12px;
+    display: flex; justify-content: space-between;
+    font-family: "Martian Mono", monospace;
+    font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--mut); z-index: 20; user-select: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    pre.ascii, .decode { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+  <header class="hud">
+    <span class="brand">Yukon</span>
+    <span>ASCII // GLYPH_BOIL</span>
+    <span class="phase" id="phase">IDLE</span>
+    <span class="spacer"></span>
+    <label>BOIL
+      <input type="range" id="rate" min="4" max="24" value="12" />
+      <span id="rateVal">12 FPS</span>
+    </label>
+    <button id="camBtn">CÁMARA // OFF</button>
+    <button id="theme">TEMA // DARK</button>
+  </header>
+
+  <div class="crop tl"></div><div class="crop tr"></div>
+  <div class="crop bl"></div><div class="crop br"></div>
+
+  <main id="deck">
+    <section class="module">
+      <div class="head"><span class="tab" style="background:var(--mint)"></span><span class="code">CV.00</span> FIGURA // BOIL</div>
+      <div class="screen"><pre class="ascii" id="figure"></pre></div>
+      <div class="foot-strip"><span>LUM → RAMP</span><span id="figFps">12 FPS</span></div>
+    </section>
+
+    <section class="module">
+      <div class="head"><span class="tab"></span><span class="code">CV.02</span> CÁMARA // ASCII</div>
+      <div class="screen"><pre class="ascii" id="cam"></pre></div>
+      <div class="foot-strip"><span>GETUSERMEDIA</span><span id="camState">OFFLINE</span></div>
+    </section>
+
+    <section class="module">
+      <div class="head"><span class="tab" style="background:var(--yellow)"></span><span class="code">OUT.00</span> DECODE // SEÑAL</div>
+      <div class="screen" style="align-items:stretch;justify-content:flex-start"><div class="decode" id="decode"></div></div>
+      <div class="foot-strip"><span id="meter">[          ]</span><span>-6.2 dB</span></div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>ASCII-ANIMATION.REF // GLYPH BOIL</span>
+    <span>PRINTABLE ASCII ONLY · NO █▓▒</span>
+    <span>AR-2000 REV.C</span>
+  </footer>
+
+<script>
+(() => {
+  // ── ramps: sparse → dense, printable ASCII only ──────────────
+  const RAMP = " .'`^~:;-=+*cszunvrx0B$Rq@N#%A";
+  const DARK = "0B$RqNzA@H#%&";
+  const LIGHT = " .'`^~:;-";
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const phaseEl = document.getElementById("phase");
+  const rateEl = document.getElementById("rate");
+  const rateVal = document.getElementById("rateVal");
+  const figEl = document.getElementById("figure");
+  const camEl = document.getElementById("cam");
+  const decodeEl = document.getElementById("decode");
+  const meterEl = document.getElementById("meter");
+  const camState = document.getElementById("camState");
+
+  const COLS = 46, ROWS = 60;
+  const camCOLS = 40, camROWS = 52;
+
+  // ── luminance → char ─────────────────────────────────────────
+  function charFor(lum, boil = true) {
+    // lum: 0 (dark) → 255 (light)
+    const t = 1 - lum / 255; // density
+    let pool;
+    if (t > 0.62) pool = DARK;
+    else if (t < 0.18) pool = LIGHT;
+    else pool = RAMP;
+    if (!boil) {
+      const idx = Math.min(pool.length - 1, Math.floor(t * pool.length));
+      return pool[idx];
+    }
+    // boil: re-pick within the density class
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  // ── figure source (offscreen, matches reference silhouette) ──
+  const src = document.createElement("canvas");
+  src.width = COLS; src.height = ROWS;
+  const sctx = src.getContext("2d", { willReadFrequently: true });
+
+  function drawFigure() {
+    const w = COLS, h = ROWS;
+    sctx.fillStyle = "#fff";
+    sctx.fillRect(0, 0, w, h);
+    sctx.fillStyle = "#000";
+    // tuft
+    sctx.fillRect(w * 0.52, h * 0.015, 1.2, h * 0.03);
+    // head
+    sctx.beginPath();
+    sctx.ellipse(w * 0.5, h * 0.115, w * 0.13, h * 0.085, 0, 0, Math.PI * 2);
+    sctx.fill();
+    // shoulders / coat
+    sctx.beginPath();
+    sctx.moveTo(w * 0.18, h * 0.30);
+    sctx.lineTo(w * 0.82, h * 0.30);
+    sctx.lineTo(w * 0.74, h * 0.62);
+    sctx.lineTo(w * 0.26, h * 0.62);
+    sctx.closePath();
+    sctx.fill();
+    // torso gap (texture through luminance noise below)
+    sctx.fillRect(w * 0.34, h * 0.34, w * 0.32, h * 0.22);
+    // arms
+    sctx.fillRect(w * 0.12, h * 0.32, w * 0.08, h * 0.26);
+    sctx.fillRect(w * 0.80, h * 0.32, w * 0.08, h * 0.26);
+    // legs
+    sctx.fillRect(w * 0.30, h * 0.62, w * 0.12, h * 0.32);
+    sctx.fillRect(w * 0.58, h * 0.62, w * 0.12, h * 0.32);
+    // feet
+    sctx.fillRect(w * 0.22, h * 0.92, w * 0.22, h * 0.05);
+    sctx.fillRect(w * 0.56, h * 0.92, w * 0.22, h * 0.05);
+  }
+  drawFigure();
+
+  function renderFigure() {
+    const img = sctx.getImageData(0, 0, COLS, ROWS).data;
+    let out = "";
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        const i = (y * COLS + x) * 4;
+        const lum = (img[i] + img[i + 1] + img[i + 2]) / 3;
+        // edge dither: sparse noise just outside the silhouette
+        out += charFor(lum, !reduce);
+      }
+      out += "\n";
+    }
+    figEl.textContent = out;
+  }
+
+  // ── camera source ────────────────────────────────────────────
+  const camSrc = document.createElement("canvas");
+  camSrc.width = camCOLS; camSrc.height = camROWS;
+  const cctx = camSrc.getContext("2d", { willReadFrequently: true });
+  let video = null;
+
+  function renderCam() {
+    if (!video) {
+      let out = "";
+      for (let y = 0; y < camROWS; y++) {
+        for (let x = 0; x < camCOLS; x++) {
+          const t = Math.random();
+          out += t > 0.92 ? "•" : " ";
+        }
+        out += "\n";
+      }
+      camEl.textContent = out;
+      return;
+    }
+    cctx.drawImage(video, 0, 0, camCOLS, camROWS);
+    const img = cctx.getImageData(0, 0, camCOLS, camROWS).data;
+    let out = "";
+    for (let y = 0; y < camROWS; y++) {
+      for (let x = 0; x < camCOLS; x++) {
+        const i = (y * camCOLS + x) * 4;
+        const lum = (img[i] + img[i + 1] + img[i + 2]) / 3;
+        out += charFor(lum, !reduce);
+      }
+      out += "\n";
+    }
+    camEl.textContent = out;
+  }
+
+  async function toggleCam() {
+    const btn = document.getElementById("camBtn");
+    if (video) {
+      video.srcObject.getTracks().forEach((t) => t.stop());
+      video = null;
+      btn.textContent = "CÁMARA // OFF";
+      camState.textContent = "OFFLINE";
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 320, height: 240, facingMode: "user" },
+      });
+      video = document.createElement("video");
+      video.srcObject = stream;
+      video.play();
+      btn.textContent = "CÁMARA // ON";
+      camState.textContent = "LIVE 320×240";
+    } catch (e) {
+      camState.textContent = "DENEGADA";
+    }
+  }
+  document.getElementById("camBtn").addEventListener("click", toggleCam);
+
+  // ── decode text (glyph scramble → settle) ────────────────────
+  const LINES = [
+    "CV.02 // MOVIMIENTO",
+    "SEÑAL 0.42 → NOTA",
+    "24-EDO · HIJAZ · 7/8",
+    "SYN.01 SUSTRACCTIVO",
+    "LOOP STATION OVERDUB",
+    "AR-2000 REV.C",
+    "OUT // MASTER REC",
+    "LAT 12MS · R 44.1K",
+  ];
+  const settled = LINES.map((l) => l);
+  const scrambled = LINES.map((l) =>
+    l.split("").map((c) => (c === " " ? " " : String.fromCharCode(33 + Math.floor(Math.random() * 93)))).join("")
+  );
+
+  function renderDecode(settledness) {
+    // settledness 0 → all scrambled, 1 → all settled
+    let out = "";
+    for (let i = 0; i < LINES.length; i++) {
+      const target = settled[i];
+      let line = "";
+      for (let j = 0; j < target.length; j++) {
+        const settleAt = (i * 0.12 + j * 0.045);
+        if (settledness > settleAt + 0.18) line += target[j];
+        else if (settledness > settleAt) line += scrambled[i][j];
+        else line += Math.random() > 0.5 ? scrambled[i][j] : target[j];
+      }
+      const pin = i === 1 && settledness > 0.7;
+      out += pin ? " " + line + " \n" : line + "\n";
+    }
+    decodeEl.textContent = out;
+  }
+
+  // ── ascii meter ──────────────────────────────────────────────
+  function renderMeter(t) {
+    const level = 4 + Math.round((Math.sin(t / 380) * 0.5 + 0.5) * 6 + Math.random() * 1.4);
+    const bar = "#".repeat(Math.min(10, level)) + ".".repeat(Math.max(0, 10 - level));
+    meterEl.textContent = "[" + bar + "]";
+  }
+
+  // ── loop ─────────────────────────────────────────────────────
+  let lastBoil = 0;
+  let decodeT = 0;
+  let raf;
+
+  function frame(now) {
+    const fps = parseInt(rateEl.value, 10);
+    const interval = 1000 / fps;
+    if (now - lastBoil >= interval) {
+      lastBoil = now;
+      phaseEl.textContent = reduce ? "STATIC" : "BOIL";
+      renderFigure();
+      renderCam();
+      if (!reduce) {
+        decodeT = (decodeT + 0.045) % 1.6;
+        renderDecode(Math.min(1, decodeT));
+        renderMeter(now);
+      } else {
+        renderDecode(1);
+        renderMeter(0);
+      }
+      rateVal.textContent = fps + " FPS";
+      document.getElementById("figFps").textContent = fps + " FPS";
+    }
+    raf = requestAnimationFrame(frame);
+  }
+
+  document.getElementById("theme").addEventListener("click", (e) => {
+    const dark = document.documentElement.getAttribute("data-theme") === "dark";
+    document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+    e.target.textContent = dark ? "TEMA // DARK" : "TEMA // LIGHT";
+  });
+
+  renderFigure();
+  renderCam();
+  renderDecode(0.2);
+  renderMeter(0);
+  raf = requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+{
+  "ui": {
+    "app": {
+      "title": "Yukon",
+      "loading": "CHARGEMENT",
+      "emptyCanvas": "TAB pour ajouter un module",
+      "patchName": "PIECE-001"
+    },
+    "topbar": {
+      "play": "JOUER",
+      "stop": "ARRÊT",
+      "addNode": "AJOUTER UN MODULE",
+      "language": "LANGUE",
+      "theme": "THÈME",
+      "themeLight": "CLAIR",
+      "themeDark": "SOMBRE"
+    },
+    "inspector": {
+      "title": "INSPECTEUR",
+      "noSelection": "Rien de sélectionné.",
+      "noSelectionHint": "Sélectionne un module dans le graphe pour éditer ses paramètres.",
+      "params": "PARAMÈTRES",
+      "info": "CE QUE ÇA FAIT"
+    },
+    "picker": {
+      "title": "AJOUTER UN MODULE",
+      "search": "Rechercher un module…",
+      "empty": "Aucun résultat"
+    },
+    "help": {
+      "what": "CE QUE ÇA FAIT",
+      "example": "EXEMPLE MUSICAL"
+    },
+    "families": {
+      "source": "SOURCE",
+      "vision": "VISION",
+      "control": "CONTROLE",
+      "music": "MUSIQUE",
+      "synth": "SYNTHÈSE",
+      "fx": "FX",
+      "out": "SORTIE"
+    },
+    "signals": {
+      "image": "IMAGE",
+      "signal": "SIGNAL",
+      "note": "NOTE",
+      "audio": "AUDIO"
+    },
+    "status": {
+      "incompatible": "TYPE INCOMPATIBLE",
+      "temporality": "T 44.1K",
+      "fake": "SANS SIGNAL"
+    },
+    "nodes": {
+      "const": {
+        "name": "CONSTANTE",
+        "desc": "Émet une valeur fixe que d'autres modules lisent.",
+        "example": "Comme tourner le bouton de volume : fixe une valeur constante. Ex : 0,7 laisse le filtre d'un autre module ouvert à 70 %."
+      },
+      "viz": {
+        "name": "MONITEUR",
+        "desc": "Affiche le signal entrant dans la vignette, sans le modifier.",
+        "example": "Comme le hublot d'un ampli : ça ne change pas le son, ça montre ce qu'il y a dedans."
+      },
+      "master": {
+        "name": "MASTER",
+        "desc": "Destination finale de l'audio avec vumètre de niveau.",
+        "example": "Le haut-parleur de la salle : tout l'audio doit se terminer ici, comme sur une table de mixage."
+      }
+    },
+    "params": {
+      "const": {
+        "value": { "label": "VALEUR", "help": "La valeur fixe qui sort du module, de 0 à 1." }
+      },
+      "viz": {
+        "gain": { "label": "ÉCHELLE", "help": "À quel point le dessin est agrandi dans la vignette." }
+      },
+      "master": {
+        "volume": { "label": "VOLUME", "help": "Niveau de sortie vers les haut-parleurs." }
+      }
+    },
+    "ports": {
+      "viz": { "in": "ENTRÉE" },
+      "master": { "in": "AUDIO" },
+      "const": { "out": "SIGNAL" }
+    }
+  }
+}

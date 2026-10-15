@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Yukon — Kinetic Loader (type_01)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Silkscreen&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --surface: #E6E1D3;
+    --surface-2: #F2EEE4;
+    --surface-3: #D8D2C2;
+    --surface-brown: #3A2422;
+    --surface-dark: #161412;
+    --primary: #1A1814;
+    --on-surface: #1A1814;
+    --on-surface-dark: #E8E2D4;
+    --secondary: #5C574C;
+    --coral: #E85B47;
+    --yellow: #E8C547;
+    --mint: #2FC4B2;
+    --olive: #8A9A4B;
+    --phosphor: #3FA66A;
+    --bg: var(--surface);
+    --fg: var(--on-surface);
+    --mut: var(--secondary);
+    --block-ink: var(--primary);
+    --block-paper: #F2EEE4;
+  }
+  html[data-theme="dark"] {
+    --bg: var(--surface-dark);
+    --fg: var(--on-surface-dark);
+    --mut: #8A8272;
+    --block-ink: var(--on-surface-dark);
+    --block-paper: #161412;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "IBM Plex Mono", monospace;
+    overflow: hidden;
+    transition: background 80ms linear;
+  }
+
+  /* ── instrument chrome ─────────────────────────────── */
+  .hud {
+    position: fixed; inset: 0 0 auto 0;
+    display: flex; align-items: center; gap: 16px;
+    padding: 12px 16px;
+    border-bottom: 1px solid color-mix(in srgb, var(--fg) 25%, transparent);
+    font-family: "Martian Mono", monospace;
+    font-size: 8px; font-weight: 500; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--mut);
+    z-index: 20; user-select: none;
+  }
+  .hud .brand { color: var(--fg); }
+  .hud .spacer { flex: 1; }
+  .hud button {
+    font: inherit; letter-spacing: inherit; text-transform: inherit;
+    color: var(--fg); background: transparent;
+    border: 1px solid color-mix(in srgb, var(--fg) 35%, transparent);
+    border-radius: 9999px;
+    padding: 6px 14px; cursor: pointer;
+    transition: background 120ms linear;
+  }
+  .hud button:hover { background: color-mix(in srgb, var(--fg) 10%, transparent); }
+  .hud button:active { transform: translateY(1px); }
+  .phase {
+    font-family: "Silkscreen", monospace;
+    font-size: 10px; letter-spacing: 0.06em;
+    color: var(--phosphor);
+    min-width: 88px;
+  }
+
+  /* crop marks */
+  .crop { position: fixed; width: 8px; height: 8px; z-index: 15; pointer-events: none; }
+  .crop::before, .crop::after { content: ""; position: absolute; background: var(--mut); }
+  .crop::before { width: 8px; height: 1px; top: 0; left: 0; }
+  .crop::after  { width: 1px; height: 8px; top: 0; left: 0; }
+  .crop.tl { top: 52px; left: 12px; }
+  .crop.tr { top: 52px; right: 12px; transform: scaleX(-1); }
+  .crop.bl { bottom: 12px; left: 12px; transform: scaleY(-1); }
+  .crop.br { bottom: 12px; right: 12px; transform: scale(-1); }
+
+  /* ── stage ─────────────────────────────────────────── */
+  #stage {
+    position: absolute; inset: 44px 0 0 0;
+    overflow: hidden;
+  }
+  #grid {
+    position: absolute; inset: 24px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-auto-rows: min-content;
+    align-content: start;
+    column-gap: 12px; row-gap: 2px;
+  }
+  .w {
+    font-family: "Martian Mono", monospace;
+    font-weight: 700;
+    font-size: clamp(11px, 1.6vw, 22px);
+    line-height: 1.35;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    color: var(--fg);
+    padding: 0 4px;
+    width: max-content; max-width: 100%;
+    overflow: hidden;
+    will-change: transform, opacity;
+  }
+  .w .unit { color: var(--mut); font-size: 0.62em; font-weight: 500; letter-spacing: 0.1em; }
+
+  /* pinned highlight blocks */
+  .w.pin-ink     { background: var(--block-ink);    color: var(--bg); }
+  .w.pin-coral   { background: var(--coral);        color: var(--primary); }
+  .w.pin-yellow  { background: var(--yellow);       color: var(--primary); }
+  .w.pin-mint    { background: var(--mint);         color: var(--primary); }
+  .w.pin-olive   { background: var(--olive);        color: var(--primary); }
+  .w.pin-shade   { background: var(--surface-3);    color: var(--primary); }
+
+  /* scattered display letters (texture) */
+  .glyph {
+    position: absolute;
+    font-family: "Martian Mono", monospace;
+    font-weight: 700;
+    color: var(--fg);
+    opacity: 0.9;
+    will-change: transform, opacity;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .glyph.inv {
+    color: var(--bg);
+    background: var(--block-ink);
+    padding: 0 10px;
+  }
+
+  /* faint dot-matrix canvas grid */
+  #dots {
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle, color-mix(in srgb, var(--fg) 22%, transparent) 1px, transparent 1px);
+    background-size: 16px 16px;
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .foot {
+    position: fixed; left: 16px; right: 16px; bottom: 12px;
+    display: flex; justify-content: space-between;
+    font-family: "Martian Mono", monospace;
+    font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--mut); z-index: 20; user-select: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .w, .glyph { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+  <header class="hud">
+    <span class="brand">Yukon</span>
+    <span>LOAD // KINETIC.TYPE_01</span>
+    <span class="phase" id="phase">SCATTER</span>
+    <span class="spacer"></span>
+    <button id="replay">REPLAY</button>
+    <button id="theme">TEMA // DARK</button>
+  </header>
+
+  <div class="crop tl"></div><div class="crop tr"></div>
+  <div class="crop bl"></div><div class="crop br"></div>
+
+  <main id="stage">
+    <div id="dots"></div>
+    <div id="grid"></div>
+  </main>
+
+  <footer class="foot">
+    <span>AR-2000 // R 44.1K // LAT 12MS</span>
+    <span id="loop">LOOP 00</span>
+    <span>TYPE_01 · PINDOWN.IO REF</span>
+  </footer>
+
+<script>
+(() => {
+  const WORDS = [
+    ["CV.02", "MOVIMIENTO", "SEÑAL", "0.42", "LUMINANCIA"],
+    ["CV.05", "MANOS", "NOTA", "24-EDO", "HIJAZ"],
+    ["CV.07", "POSE", "ACORDE", "7/8", "SWING"],
+    ["SYN.01", "SUSTRACCTIVO", "AUDIO", "-6.2 dB", "R 44.1k"],
+    ["SYN.03", "KARPLUS", "GAMelan", "BUCLE", "OVERDUB"],
+    ["SYN.05", "GRANULAR", "FM", "CENTS", "+24"],
+    ["FX.02", "DELAY", "REVERB", "FEEDBACK", "0.38"],
+    ["FX.06", "DISTORSIÓN", "BITCRUSH", "8 BIT", "DRIVE"],
+    ["SEQ.01", "ARPEJADOR", "PASOS", "ACENTO", "EUCLID?"],
+    ["OUT.00", "MASTER", "SALIDA", "PHOSPHOR", "REC"],
+    ["TUN.01", "MAQAM", "RAGA", "JI 5-LIM", "PELOG"],
+    ["CTRL.04", "LFO", "ADSR", "S&H", "AZAR"],
+  ];
+  const BIG = ["Y", "U", "K", "O", "N", "4", "0", "1", "0", "7", "/", "8"];
+  const PINS = ["pin-ink", "pin-coral", "pin-yellow", "pin-mint", "pin-olive", "pin-shade"];
+
+  const grid = document.getElementById("grid");
+  const stage = document.getElementById("stage");
+  const phaseEl = document.getElementById("phase");
+  const loopEl = document.getElementById("loop");
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  let loopCount = 0;
+  let timers = [];
+  const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+  const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+  // build settled grid
+  const words = [];
+  WORDS.forEach((row) => {
+    row.forEach((text) => {
+      const el = document.createElement("span");
+      el.className = "w";
+      el.innerHTML = text.includes(" ") || text.includes(".")
+        ? text.replace(/([A-Za-z]+)$/, '<span class="unit">$1</span>')
+        : text;
+      el.textContent = text;
+      grid.appendChild(el);
+      words.push(el);
+    });
+  });
+
+  // scattered display glyphs
+  const glyphs = BIG.map((ch) => {
+    const el = document.createElement("span");
+    el.className = "glyph" + (Math.random() < 0.25 ? " inv" : "");
+    el.textContent = ch;
+    stage.appendChild(el);
+    return el;
+  });
+
+  function placeGlyphsScatter() {
+    glyphs.forEach((el) => {
+      el.style.left = rnd(0, stage.clientWidth - 60) + "px";
+      el.style.top = rnd(0, stage.clientHeight - 80) + "px";
+      el.style.fontSize = rnd(48, 160) + "px";
+      el.style.opacity = rnd(0.35, 1).toFixed(2);
+      el.style.transition = "none";
+    });
+  }
+
+  function scatter() {
+    phaseEl.textContent = "SCATTER";
+    words.forEach((el) => {
+      el.className = "w";
+      el.style.transition = "none";
+      const dx = rnd(-0.75, 0.75) * window.innerWidth;
+      const dy = rnd(-0.85, 0.85) * window.innerHeight;
+      const s = pick([0.5, 1, 1.8, 2.2]);
+      el.style.transform = `translate(${dx}px, ${dy}px) scale(${s})`;
+      el.style.opacity = rnd(0.35, 1).toFixed(2);
+    });
+    placeGlyphsScatter();
+  }
+
+  function converge() {
+    phaseEl.textContent = "CONVERGE";
+    words.forEach((el, i) => {
+      const delay = reduce ? 0 : 12 * (i % 40);
+      el.style.transition = `transform 180ms ease-out ${delay}ms, opacity 120ms linear ${delay}ms`;
+      el.style.transform = "none";
+      el.style.opacity = "1";
+    });
+    glyphs.forEach((el, i) => {
+      const delay = reduce ? 0 : 30 * i;
+      el.style.transition = `opacity 160ms linear ${delay}ms`;
+      el.style.opacity = "0";
+    });
+  }
+
+  function pinOnce(coralOnly = false) {
+    const el = pick(words);
+    if (!el) return;
+    const cls = coralOnly ? "pin-coral" : pick(PINS);
+    el.classList.add(cls);
+    later(() => el.classList.remove(cls), coralOnly ? 1400 : rnd(400, 900));
+  }
+
+  function pinPhase() {
+    phaseEl.textContent = "PIN";
+    for (let i = 0; i < 8; i++) later(() => pinOnce(), 60 * i);
+    later(() => pinOnce(true), 200);
+  }
+
+  function settlePhase() {
+    phaseEl.textContent = "SETTLE";
+    for (let i = 0; i < 4; i++) later(() => pinOnce(), 900 * i);
+    later(() => pinOnce(true), 1200);
+  }
+
+  function run() {
+    clearTimers();
+    loopCount += 1;
+    loopEl.textContent = "LOOP " + String(loopCount).padStart(2, "0");
+
+    if (reduce) {
+      words.forEach((el) => {
+        el.style.transition = "none";
+        el.style.transform = "none";
+        el.style.opacity = "1";
+      });
+      glyphs.forEach((el) => { el.style.opacity = "0"; });
+      phaseEl.textContent = "SETTLE";
+      for (let i = 0; i < 3; i++) later(() => pinOnce(), 2000 * i);
+      later(run, 8000);
+      return;
+    }
+
+    scatter();
+    later(converge, 220);
+    later(pinPhase, 220 + 12 * Math.min(words.length, 40) + 200);
+    later(settlePhase, 2400);
+    later(run, 5600);
+  }
+
+  document.getElementById("replay").addEventListener("click", run);
+  document.getElementById("theme").addEventListener("click", (e) => {
+    const dark = document.documentElement.getAttribute("data-theme") === "dark";
+    document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+    e.target.textContent = dark ? "TEMA // DARK" : "TEMA // LIGHT";
+  });
+
+  window.addEventListener("resize", () => { if (!reduce) placeGlyphsScatter(); });
+  run();
+})();
+</script>
+</body>
+</html>

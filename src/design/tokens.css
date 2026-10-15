@@ -1,0 +1,60 @@
+:root {
+  --y-signal-visual: #2fc4b2;
+  --y-signal-data: #e85b47;
+  --y-signal-note: #e8c547;
+  --y-signal-audio: #8a9a4b;
+  --y-accent: #e85b47;
+  --y-error: #c43b2f;
+  --y-phosphor: #3fa66a;
+
+  --y-bg: #e6e1d3;
+  --y-surface: #f2eee4;
+  --y-surface-recess: #d8d2c2;
+  --y-ink: #1a1814;
+  --y-ink-soft: #5c574c;
+  --y-line: #b8b2a2;
+  --y-panel: #1a1814;
+  --y-panel-ink: #e6e1d3;
+  --y-lcd-bg: #d8d2c2;
+  --y-lcd-ink: #1a1814;
+  --y-terminal-bg: #ede6d8;
+  --y-terminal-ink: #1a1814;
+  --y-dots: rgba(26, 24, 20, 0.26);
+  --y-hover: rgba(26, 24, 20, 0.08);
+  --y-flow: rgba(26, 24, 20, 0.04);
+
+  --y-font-display: 'Martian Mono', monospace;
+  --y-font-data: 'IBM Plex Mono', monospace;
+  --y-font-lcd: 'Silkscreen', monospace;
+  --y-font-jp: 'Noto Sans JP', sans-serif;
+
+  --y-r0: 0px;
+  --y-r1: 2px;
+  --y-r2: 4px;
+  --y-r3: 8px;
+
+  --y-s1: 4px;
+  --y-s2: 8px;
+  --y-s3: 16px;
+  --y-s4: 24px;
+  --y-s5: 32px;
+  --y-s6: 48px;
+}
+
+html[data-theme='dark'] {
+  --y-bg: #161412;
+  --y-surface: #221e1a;
+  --y-surface-recess: #2e2822;
+  --y-ink: #e8e2d4;
+  --y-ink-soft: #8a8272;
+  --y-line: #3d372f;
+  --y-panel: #3a2422;
+  --y-panel-ink: #e8e2d4;
+  --y-lcd-bg: #3a2422;
+  --y-lcd-ink: #3fa66a;
+  --y-terminal-bg: #3a2422;
+  --y-terminal-ink: #e8e2d4;
+  --y-dots: rgba(232, 226, 212, 0.16);
+  --y-hover: rgba(232, 226, 212, 0.08);
+  --y-flow: rgba(232, 226, 212, 0.03);
+}
