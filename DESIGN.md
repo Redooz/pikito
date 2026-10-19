@@ -1,6 +1,6 @@
 ---
 version: alpha
-name: Yukon
+name: Pikito
 description: >-
   Node-based computer-vision music studio. Y2K Japanese consumer electronics
   meets Soviet lab instrument and terminal HUD. Designed for musicians who know
@@ -204,11 +204,11 @@ components:
     rounded: "{rounded.sm}"
 ---
 
-# Yukon
+# Pikito
 
 ## Overview
 
-Yukon is a node-based studio where computer vision makes music: a camera, a video
+Pikito is a node-based studio where computer vision makes music: a camera, a video
 file, or an image becomes notes, rhythms, and sound. The audience is a musician
 who reads chord symbols fluently but has never opened TouchDesigner. The software
 must feel like an **instrument**, not like a website and not like a visual
@@ -325,7 +325,7 @@ grid, not from shrinkage: targets stay ≥ 32px.
 - **Rhythm strip**: the transport lives in the top bar as a physical control
   cluster (play, stop, BPM numeral at `headline-md`, meter `7/8`, swing %).
 - Breakpoints: the canvas is the priority at every width. Below 900px the
-  inspector becomes a bottom sheet. Yukon is a desktop instrument first.
+  inspector becomes a bottom sheet. Pikito is a desktop instrument first.
 
 ## Elevation & Depth
 
@@ -437,7 +437,7 @@ meter segments. No confetti, no springs, no parallax.
 
 Loading is the one place where motion is loud. Reference: the `type_01`
 pindown.io kinetic typography reel — brutalist Swiss type that scatters, flies
-into place, and gets pinned by inverted highlight blocks. Yukon loaders are the
+into place, and gets pinned by inverted highlight blocks. Pikito loaders are the
 same machine with our own voice: mono type, instrument vocabulary, family
 colors.
 
@@ -483,8 +483,8 @@ STATION`, `SEÑAL`, `NOTA`, `AR-2000`, `R 44.1k`, `LAT 12ms`.
 | Node | Inside node thumbnail | `lcd` 8–10px | That node's parameter names |
 | Task | Inspector panel / toast | `headline-md` | Action name (`GUARDAR`, `CARGAR`) |
 
-Reference reel: `yukon-mood-board/type_01_pindown.io_1791947830.mp4`.
-Interactive prototype: `yukon-app/preview/loader-kinetic.html`.
+Reference reel: `pikito-mood-board/type_01_pindown.io_1791947830.mp4`.
+Interactive prototype: `pikito-app/preview/loader-kinetic.html`.
 
 ### ASCII (glyph boil)
 
@@ -493,7 +493,7 @@ characters in a chunky bitmap font, black on white. The silhouette holds still
 while every cell boils: each frame, each glyph is redrawn from the set that
 matches its luminance. It is a scan degrading in place.
 
-Yukon uses this as its third motion language, next to kinetic loaders and
+Pikito uses this as its third motion language, next to kinetic loaders and
 mechanical UI motion.
 
 **Mechanics**:
@@ -530,7 +530,7 @@ mechanical UI motion.
 - `prefers-reduced-motion`: freeze the boil on one frame; keep the ASCII
   render itself.
 
-Prototype: `yukon-app/preview/ascii-boil.html`.
+Prototype: `pikito-app/preview/ascii-boil.html`.
 
 ## Do's and Don'ts
 
@@ -559,5 +559,5 @@ Prototype: `yukon-app/preview/ascii-boil.html`.
   carries no signal on nodes, meters, or previews.
 - DON'T color-code decoration. If it glows, it carries signal.
 - DON'T translate the aesthetic into a different metaphor (no "notebook", no
-  "music streaming app", no "game"). Yukon is a machine for making music from
+  "music streaming app", no "game"). Pikito is a machine for making music from
   images.

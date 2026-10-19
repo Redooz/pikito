@@ -20,7 +20,7 @@ export function TopBar({ theme, onAddNode, onToggleTheme }: TopBarProps) {
 
   return (
     <header className="topbar">
-      <span className="brand">YUKON</span>
+      <span className="brand">PIKITO</span>
       <span className="patch type-micro">{t('ui.app.patchName')}</span>
       <span className="jp-deco">ユコン CV MUSIC</span>
       <span className="sep" />

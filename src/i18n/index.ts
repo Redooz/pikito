@@ -19,7 +19,7 @@ const resources: Record<Language, { ui: typeof es.ui }> = {
 }
 
 function detectLanguage(): Language {
-  const stored = localStorage.getItem('yukon.lang')
+  const stored = localStorage.getItem('pikito.lang')
   if (stored && (LANGUAGES as readonly string[]).includes(stored)) return stored as Language
   const nav = navigator.language.slice(0, 2).toLowerCase()
   if (nav === 'fr') return 'fr'
@@ -44,6 +44,6 @@ export function initI18n(): I18nInstance {
 
 export function setLanguage(lang: Language) {
   void i18next.changeLanguage(lang)
-  localStorage.setItem('yukon.lang', lang)
+  localStorage.setItem('pikito.lang', lang)
   document.documentElement.lang = lang
 }

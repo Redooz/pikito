@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const STORE_KEY = 'yukon.timeline.hidden'
+const STORE_KEY = 'pikito.timeline.hidden'
 
 export function useTimelineHidden(): [hidden: boolean, toggle: () => void] {
   const [hidden, setHidden] = useState(() => localStorage.getItem(STORE_KEY) === '1')

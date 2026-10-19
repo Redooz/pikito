@@ -1,7 +1,7 @@
 {
   "ui": {
     "app": {
-      "title": "Yukon",
+      "title": "Pikito",
       "loading": "LOADING",
       "emptyCanvas": "CTRL+K to add a node",
       "patchName": "PATCH-001"

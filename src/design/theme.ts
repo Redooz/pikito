@@ -1,6 +1,6 @@
 export type Theme = 'light' | 'dark'
 
-const KEY = 'yukon.theme'
+const KEY = 'pikito.theme'
 
 export function getTheme(): Theme {
   const stored = localStorage.getItem(KEY)

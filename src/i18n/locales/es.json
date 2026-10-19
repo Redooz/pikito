@@ -1,7 +1,7 @@
 {
   "ui": {
     "app": {
-      "title": "Yukon",
+      "title": "Pikito",
       "loading": "CARGANDO",
       "emptyCanvas": "CTRL+K para añadir un nodo",
       "patchName": "PARCH-001"
