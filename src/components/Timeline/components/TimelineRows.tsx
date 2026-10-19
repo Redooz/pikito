@@ -1,5 +1,7 @@
+import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { stamp } from '../timelineStamp'
+import { useNowInView } from '../hook/useNowInView'
 import type { HistoryEvent } from '../../../graph/store'
 import type { HistoryKind } from '../../../graph/store'
 
@@ -20,8 +22,10 @@ export function TimelineRows(props: {
   onJumpFuture: (steps: number) => void
 }) {
   const { t } = useTranslation()
+  const rowsRef = useRef<HTMLDivElement | null>(null)
+  useNowInView(rowsRef, [props.past.length, props.future.length])
   return (
-    <div className="timeline-rows">
+    <div className="timeline-rows" ref={rowsRef}>
       {props.past.map((ev, i) => (
         <button
           key={`${ev.ts}${i}`}
